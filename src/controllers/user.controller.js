@@ -3,27 +3,27 @@ const generateJwt = require("../helpers/generateJWT");
 
 module.exports = {
   getUser(req, res) {
-    res.json(req.user);
+    res.json({
+      user: {
+        firstName: req.user.firstName,
+        lastName: req.user.lastName,
+        email: req.user.email,
+      },
+    });
   },
 
   async createUser(req, res) {
-    const { firstName, lastName, email, password } = req.user;
-
-    const re = new RegExp(
-      "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{8,})"
-    );
-
-    if (re.test(password)) {
-      res
-        .json({ message: "Su contraseña no es lo suficientemente segura" })
-        .status(400);
-    }
-
     try {
+      const { firstName, lastName, email, password } = req.body;
+
+      if (!firstName || !lastName || !email || !password) {
+        return res.status(400).json({ message: "Rellene todos los datos  " });
+      }
+
       const existUser = await User.findOne({ email });
 
       if (existUser) {
-        res.json({ message: "Su Email ya existe" }).status(400);
+        return res.status(400).json({ message: "Su Email ya existe" });
       }
 
       const newUser = new User({
@@ -35,39 +35,56 @@ module.exports = {
 
       const savedUser = await newUser.save();
 
-      delete savedUser.password;
-
       const token = generateJwt(savedUser);
 
-      res.json({ token, user: savedUser });
+      res.json({
+        token,
+        user: {
+          firstName: savedUser.firstName,
+          lastName: savedUser.lastName,
+          email: savedUser.email,
+        },
+      });
     } catch (error) {
-      res.send(error).status(500);
+      res.status(500).send(error);
     }
   },
 
   async loginUser(req, res) {
-    const { email, password } = req.body;
+    try {
+      const { email, password } = req.body;
 
-    if (!email || !password) {
-      res.json({ message: "Rellene todos los campos" }).status(400);
-    }
+      if (!email || !password) {
+        res.status(400).json({ message: "Rellene todos los campos" });
+      }
 
-    const user = await User.findOne({ email });
+      const user = await User.findOne({ email });
 
-    if (!user) {
-      res.json({ message: "Email o Contraseña incorrecta" });
-    }
+      if (!user) {
+        return res.json({ message: "Email o Contraseña incorrecta" });
+      }
 
-    const checkedPassword = user.checkPassword(password);
+      const checkedPassword = await user.checkPassword(password);
 
-    if (checkedPassword) {
-      delete user.password;
+      console.log(checkedPassword);
 
-      const token = generateJwt(savedUser);
+      if (checkedPassword) {
+        const token = generateJwt(user);
 
-      res.json({ token, user });
-    } else {
-      res.json({ message: "Email o Contraseña incorrecta" });
+        return res.json({
+          token,
+          user: {
+            firstName: user.firstName,
+            lastName: user.lastName,
+            email: user.email,
+          },
+        });
+      } else {
+        return res.json({ message: "Email o Contraseña incorrecta" });
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send(error);
     }
   },
 };
