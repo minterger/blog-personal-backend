@@ -12,6 +12,8 @@ module.exports = {
 
       req.user = await User.findById(user.id);
 
+      delete req.user.password;
+      
       next();
     } catch (error) {
       res.sendStatus(403);
