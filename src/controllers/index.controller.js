@@ -44,7 +44,7 @@ module.exports = {
       const post = await Post.findById(id);
 
       if (!post) {
-        res.status(401).json({
+        return res.status(401).json({
           message: "Post no encontrado",
         });
       }
@@ -72,7 +72,7 @@ module.exports = {
       const post = await Post.findById(id);
 
       if (!post) {
-        res.status(401).json({
+        return res.status(401).json({
           message: "Post no encontrado",
         });
       }
