@@ -6,7 +6,7 @@ const morgan = require("morgan");
 
 const app = express();
 
-const origin = process.env.NODE_ENV === "dev" ? "*" : "";
+const origin = process.env.NODE_ENV === "dev" ? "*" : process.env.frontendUrl;
 
 app.use(cors({ origin }));
 app.use(express.json());
