@@ -2,9 +2,9 @@ const { model, Schema } = require("mongoose");
 
 const commentSchema = new Schema(
   {
-    author: String,
-    body: String,
-    hidde: Boolean,
+    author: { type: String, required: true },
+    body: { type: String, required: true },
+    hidden: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
