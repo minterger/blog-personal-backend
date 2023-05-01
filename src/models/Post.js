@@ -2,10 +2,10 @@ const { model, Schema } = require("mongoose");
 
 const postSchema = new Schema(
   {
-    title: { type: String, required: true },
+    title: { type: String, required: true, unique: true },
     author: { type: String, required: true },
     body: { type: String, required: true },
-    url: { type: String, required: true },
+    url: { type: String, required: true, unique: true },
 
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     hidden: { type: Boolean, default: false },
