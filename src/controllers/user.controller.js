@@ -1,14 +1,19 @@
 const User = require("../models/User");
 const generateJwt = require("../helpers/generateJWT");
 
+const userWithoutPassword = (user) => {
+  return {
+    firstName: user.firstName,
+    lastName: user.lastName,
+    email: user.email,
+    admin: user.admin,
+  };
+};
+
 module.exports = {
   getUser(req, res) {
     res.json({
-      user: {
-        firstName: req.user.firstName,
-        lastName: req.user.lastName,
-        email: req.user.email,
-      },
+      user: userWithoutPassword(req.user),
     });
   },
 
@@ -39,11 +44,7 @@ module.exports = {
 
       res.json({
         token,
-        user: {
-          firstName: savedUser.firstName,
-          lastName: savedUser.lastName,
-          email: savedUser.email,
-        },
+        user: userWithoutPassword(savedUser),
       });
     } catch (error) {
       res.status(500).send(error);
@@ -73,11 +74,7 @@ module.exports = {
 
         return res.json({
           token,
-          user: {
-            firstName: user.firstName,
-            lastName: user.lastName,
-            email: user.email,
-          },
+          user: userWithoutPassword(user),
         });
       } else {
         return res.json({ message: "Email o Contraseña incorrecta" });
