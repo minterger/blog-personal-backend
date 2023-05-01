@@ -21,6 +21,7 @@ module.exports = {
     const token = generateJwt(req.user);
 
     res.json({
+      token,
       user: userWithoutPassword(req.user),
     });
   },
