@@ -5,6 +5,6 @@ module.exports = (user) => {
   return jwt.sign(
     { id, admin, firstname, lastname, email },
     process.env.TOKEN_SECRET,
-    { expiresIn: "1800s" }
+    { expiresIn: "2d" }
   );
 };

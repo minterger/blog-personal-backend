@@ -10,8 +10,16 @@ const userWithoutPassword = (user) => {
   };
 };
 
+const validateEmail = (email) => {
+  return String(email).match(
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  );
+};
+
 module.exports = {
   getUser(req, res) {
+    const token = generateJwt(req.user);
+
     res.json({
       user: userWithoutPassword(req.user),
     });
@@ -23,6 +31,12 @@ module.exports = {
 
       if (!firstName || !lastName || !email || !password) {
         return res.status(400).json({ message: "Rellene todos los datos  " });
+      }
+
+      email = email.toLowerCase();
+
+      if (!validateEmail(email)) {
+        return res.status(400).json({ message: "Ingrese un email valido" });
       }
 
       const existUser = await User.findOne({ email });
@@ -58,6 +72,8 @@ module.exports = {
       if (!email || !password) {
         res.status(400).json({ message: "Rellene todos los campos" });
       }
+
+      email = email.toLowerCase();
 
       const user = await User.findOne({ email });
 
