@@ -8,7 +8,7 @@ const app = express();
 
 const origin = process.env.NODE_ENV === "dev" ? "*" : "";
 
-app.use(cors(origin));
+app.use(cors({ origin }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
