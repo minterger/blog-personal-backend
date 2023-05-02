@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev"));
 
-app.use(indexRoute);
+app.use("/posts", indexRoute);
 
 app.use("/user", userRoute);
 
