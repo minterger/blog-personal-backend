@@ -34,13 +34,13 @@ module.exports = {
         return res.status(400).json({ message: "Rellene todos los datos  " });
       }
 
-      email = email.toLowerCase();
+      let emailLowerCase = email.toLowerCase();
 
-      if (!validateEmail(email)) {
+      if (!validateEmail(emailLowerCase)) {
         return res.status(400).json({ message: "Ingrese un email valido" });
       }
 
-      const existUser = await User.findOne({ email });
+      const existUser = await User.findOne({ email: emailLowerCase });
 
       if (existUser) {
         return res.status(400).json({ message: "Su Email ya existe" });
@@ -49,7 +49,7 @@ module.exports = {
       const newUser = new User({
         firstName,
         lastName,
-        email,
+        email: emailLowerCase,
         password,
       });
 
@@ -74,9 +74,9 @@ module.exports = {
         res.status(400).json({ message: "Rellene todos los campos" });
       }
 
-      email = email.toLowerCase();
+      let emailLowerCase = email.toLowerCase();
 
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email: emailLowerCase });
 
       if (!user) {
         return res.json({ message: "Email o Contraseña incorrecta" });

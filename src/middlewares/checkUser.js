@@ -5,7 +5,7 @@ module.exports = {
   async checkUser(req, res, next) {
     const token = req.headers["authorization"];
 
-    if (!token) res.sendStatus(401);
+    if (!token) return res.sendStatus(401);
 
     try {
       const user = jwt.verify(token, process.env.TOKEN_SECRET);

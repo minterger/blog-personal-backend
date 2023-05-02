@@ -1,21 +1,27 @@
 const { Router } = require("express");
 const {
   getPosts,
+  getOnePost,
   createPosts,
   editPost,
   deletePost,
+  addComment,
 } = require("../controllers/index.controller");
 
 const { checkUser, userIsAdmin } = require("../middlewares/checkUser");
 
 const route = Router();
 
-route.get("/posts", getPosts);
+route.get("/", getPosts);
 
-route.post("/posts", checkUser, userIsAdmin, createPosts);
+route.get("/:id", getOnePost);
 
-route.put("/posts/:id", checkUser, userIsAdmin, editPost);
+route.post("/", checkUser, userIsAdmin, createPosts);
 
-route.delete("/posts/:id", checkUser, userIsAdmin, deletePost);
+route.put("/:id", checkUser, userIsAdmin, editPost);
+
+route.delete("/:id", checkUser, userIsAdmin, deletePost);
+
+route.post("/comment/:id", checkUser, addComment);
 
 module.exports = route;

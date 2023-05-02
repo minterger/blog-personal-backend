@@ -1,9 +1,13 @@
 const Post = require("../models/Post");
+const Comment = require("../models/Comment");
 
 module.exports = {
   async getPosts(req, res) {
     try {
-      const posts = await Post.find().populate("Comment");
+      const posts = await Post.find().populate("author", {
+        firstName: 1,
+        lastName: 1,
+      });
       res.json(posts);
     } catch (error) {
       res.json(error);
@@ -11,23 +15,43 @@ module.exports = {
     }
   },
 
+  async getOnePost(req, res) {
+    try {
+      const id = req.params.id;
+      const post = await Post.findById(id)
+        .populate({
+          path: "comments",
+          populate: { path: "author", select: "firstName lastName" },
+        })
+        .populate("author", { firstName: 1, lastName: 1 });
+
+      if (!post) {
+        return res.status(404).json({ message: "Post no encontrado" });
+      }
+
+      res.json(post);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send(error);
+    }
+  },
+
   async createPosts(req, res) {
     try {
       const { title, body, url, hidden } = req.body;
-      const author = req.user.firstName + " " + req.user.lastName;
 
       const newPost = new Post({
-        author,
-        title,
-        body,
-        url,
-        hidden,
+        author: req.user,
+        title: title.trim(),
+        body: body.trim(),
+        url: url.trim().replace(/\s+/gm, "-"),
+        hidden: !!hidden,
       });
 
       const savedPost = await newPost.save();
 
       res.json({
-        post: savedPost,
+        post: await savedPost.populate("author", { firstName: 1, lastName: 1 }),
         message: "Post creado con exito",
       });
     } catch (error) {
@@ -44,15 +68,15 @@ module.exports = {
       const post = await Post.findById(id);
 
       if (!post) {
-        return res.status(401).json({
+        return res.status(404).json({
           message: "Post no encontrado",
         });
       }
 
-      post.title = title;
-      post.body = body;
-      post.hidden = hidden;
-      post.url = url;
+      post.title = (title || post.title).trim();
+      post.body = (body || post.body).trim();
+      post.hidden = hidden === undefined ? post.hidden : hidden;
+      post.url = (url || post.url).trim().replace(/\s+/gm, "-");
 
       const editedPost = await post.save();
 
@@ -72,16 +96,47 @@ module.exports = {
       const post = await Post.findById(id);
 
       if (!post) {
-        return res.status(401).json({
+        return res.status(404).json({
           message: "Post no encontrado",
         });
       }
 
-      await Post.deleteOne({ id }).populate("comments");
+      await post.deleteOne();
 
-      res.json({
+      await Comment.deleteMany({ _id: { $in: post.comments } });
+
+      await res.json({
         message: "Post eliminado",
       });
+    } catch (error) {
+      console.error(error);
+      res.status(500).send(error);
+    }
+  },
+
+  async addComment(req, res) {
+    try {
+      const postId = req.params.id;
+      const { body } = req.body;
+
+      const post = await Post.findById(postId)
+        .populate({
+          path: "comments",
+          populate: { path: "author", select: "firstName lastName" },
+        })
+        .populate("author", { firstName: 1, lastName: 1 });
+
+      const comment = new Comment({ author: req.user, body });
+
+      await (
+        await comment.save()
+      ).populate("author", { firstName: 1, lastName: 1 });
+
+      post.comments.push(comment);
+
+      await post.save();
+
+      res.json(post);
     } catch (error) {
       console.error(error);
       res.status(500).send(error);
