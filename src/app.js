@@ -4,6 +4,8 @@ const indexRoute = require("./routes/index.route");
 const userRoute = require("./routes/user.route");
 const morgan = require("morgan");
 
+require("./database");
+
 const app = express();
 
 const origin = process.env.NODE_ENV === "dev" ? "*" : process.env.frontendUrl;

@@ -1,10 +1,19 @@
 {
   "version": 2,
+  "env": {
+    "MONGO_URI": "mongodb+srv://admin:Lalocota1@cluster0.yrceh.mongodb.net/blog-test?retryWrites=true&w=majority",
+    "TOKEN_SECRET": "administhebest"
+  },
   "builds": [
     {
-      "src": "index.js",
+      "src": "/src/app.js",
       "use": "@vercel/node"
     }
   ],
-  "routes": [{ "src": "/(.*)", "dest": "/index.js" }]
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/src/app.js"
+    }
+  ]
 }
