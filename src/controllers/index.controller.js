@@ -50,13 +50,14 @@ module.exports = {
 
   async createPosts(req, res) {
     try {
-      const { title, body, url, imgUrl, hidden } = req.body;
+      const { title, body, labels, url, imgUrl, hidden } = req.body;
 
       const html = marked.parse(body.trim());
 
       const newPost = new Post({
         author: req.user,
         title: title.trim(),
+        labels,
         body: body.trim(),
         html,
         imgUrl: imgUrl.trim(),
@@ -83,7 +84,7 @@ module.exports = {
 
   async editPost(req, res) {
     try {
-      const { title, body, url, imgUrl, hidden } = req.body;
+      const { title, body, labels, url, imgUrl, hidden } = req.body;
       const id = req.params.id;
 
       const post = await Post.findById(id);
@@ -98,6 +99,7 @@ module.exports = {
 
       post.title = (title || post.title).trim();
       post.body = (body || post.body).trim();
+      post.labels = labels || post.labels;
       post.html = html;
       post.hidden = hidden === undefined ? post.hidden : hidden;
       post.imgUrl = (imgUrl || post.imgUrl).trim();
