@@ -5,10 +5,18 @@ const { marked } = require("marked");
 module.exports = {
   async getPosts(req, res) {
     try {
-      const posts = await Post.find().populate("author", {
-        firstName: 1,
-        lastName: 1,
-      });
+      const options = {
+        page: 1,
+        limit: 10,
+        sort: "asca",
+        populate: {
+          path: "author",
+          select: "firstName lastName email avatar",
+        },
+      };
+
+      const posts = await Post.paginate({}, options);
+
       res.json(posts);
     } catch (error) {
       res.json(error);
@@ -22,7 +30,10 @@ module.exports = {
       const post = await Post.findById(id)
         .populate({
           path: "comments",
-          populate: { path: "author", select: "firstName lastName" },
+          populate: {
+            path: "author",
+            select: "firstName lastName email avatar",
+          },
         })
         .populate("author", { firstName: 1, lastName: 1 });
 
@@ -39,7 +50,7 @@ module.exports = {
 
   async createPosts(req, res) {
     try {
-      const { title, body, url, hidden } = req.body;
+      const { title, body, url, imgUrl, hidden } = req.body;
 
       const html = marked.parse(body.trim());
 
@@ -48,6 +59,7 @@ module.exports = {
         title: title.trim(),
         body: body.trim(),
         html,
+        imgUrl: imgUrl.trim(),
         url: url.trim().replace(/\s+/gm, "-"),
         hidden: !!hidden,
       });
@@ -55,7 +67,12 @@ module.exports = {
       const savedPost = await newPost.save();
 
       res.json({
-        post: await savedPost.populate("author", { firstName: 1, lastName: 1 }),
+        post: await savedPost.populate("author", {
+          firstName: 1,
+          lastName: 1,
+          avatar: 1,
+          email: 1,
+        }),
         message: "Post creado con exito",
       });
     } catch (error) {
@@ -66,7 +83,7 @@ module.exports = {
 
   async editPost(req, res) {
     try {
-      const { title, body, url, hidden } = req.body;
+      const { title, body, url, imgUrl, hidden } = req.body;
       const id = req.params.id;
 
       const post = await Post.findById(id);
@@ -83,6 +100,7 @@ module.exports = {
       post.body = (body || post.body).trim();
       post.html = html;
       post.hidden = hidden === undefined ? post.hidden : hidden;
+      post.imgUrl = (imgUrl || post.imgUrl).trim();
       post.url = (url || post.url).trim().replace(/\s+/gm, "-");
 
       const editedPost = await post.save();
@@ -132,13 +150,13 @@ module.exports = {
           path: "comments",
           populate: { path: "author", select: "firstName lastName" },
         })
-        .populate("author", { firstName: 1, lastName: 1 });
+        .populate("author", { firstName: 1, lastName: 1, avatar: 1, email: 1 });
 
       const comment = new Comment({ author: req.user, body });
 
       await (
         await comment.save()
-      ).populate("author", { firstName: 1, lastName: 1 });
+      ).populate("author", { firstName: 1, lastName: 1, avatar: 1, email: 1 });
 
       post.comments.push(comment);
 

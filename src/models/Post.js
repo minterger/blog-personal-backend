@@ -1,5 +1,5 @@
 const { model, Schema } = require("mongoose");
-const Comment = require("./Comment");
+const paginate = require("mongoose-paginate-v2");
 
 const postSchema = new Schema(
   {
@@ -9,7 +9,7 @@ const postSchema = new Schema(
     body: { type: String, required: true },
     html: { type: String, required: true },
     url: { type: String, required: true, unique: true },
-
+    imgUrl: { type: String },
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],
     hidden: { type: Boolean, default: false },
   },
@@ -17,6 +17,8 @@ const postSchema = new Schema(
     timestamps: true,
   }
 );
+
+postSchema.plugin(paginate);
 
 postSchema.pre("deleteOne", async function (next) {
   console.log("deleteone");
