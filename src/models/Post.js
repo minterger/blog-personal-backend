@@ -5,7 +5,9 @@ const postSchema = new Schema(
   {
     title: { type: String, required: true, unique: true },
     author: { type: Schema.Types.ObjectId, ref: "User" },
+    labels: [{ type: String }],
     body: { type: String, required: true },
+    html: { type: String, required: true },
     url: { type: String, required: true, unique: true },
 
     comments: [{ type: Schema.Types.ObjectId, ref: "Comment" }],

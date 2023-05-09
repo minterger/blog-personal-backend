@@ -1,5 +1,6 @@
 const Post = require("../models/Post");
 const Comment = require("../models/Comment");
+const { marked } = require("marked");
 
 module.exports = {
   async getPosts(req, res) {
@@ -40,10 +41,13 @@ module.exports = {
     try {
       const { title, body, url, hidden } = req.body;
 
+      const html = marked.parse(body.trim());
+
       const newPost = new Post({
         author: req.user,
         title: title.trim(),
         body: body.trim(),
+        html,
         url: url.trim().replace(/\s+/gm, "-"),
         hidden: !!hidden,
       });
@@ -73,8 +77,11 @@ module.exports = {
         });
       }
 
+      const html = marked.parse((body || post.body).trim());
+
       post.title = (title || post.title).trim();
       post.body = (body || post.body).trim();
+      post.html = html;
       post.hidden = hidden === undefined ? post.hidden : hidden;
       post.url = (url || post.url).trim().replace(/\s+/gm, "-");
 
@@ -119,6 +126,7 @@ module.exports = {
       const postId = req.params.id;
       const { body } = req.body;
 
+      body.replace(/<\/?!?\-*\w*-*>/g, "");
       const post = await Post.findById(postId)
         .populate({
           path: "comments",
